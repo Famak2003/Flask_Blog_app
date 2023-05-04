@@ -13,7 +13,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/") # This forward slash(/) is the root page or the home page of this webapp
 @app.route("/home")
 def home():
-    posts = Post.query.all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5) # The order_by(Post.date_posted.desc()) is added to make sure that the latest post is found at the top of the blog. The pageinate is to limit the number of posts loaded per page, therefore numbers of how many post should be available per page is inserted into it, and the reset of the unloaded page will be in the next on at the footer of the blog
     return render_template('home.html', posts=posts)
 
 @app.route("/about")
@@ -113,7 +114,7 @@ def post(post_id): # It takes post_id as an input
 @app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
 @login_required
 def update_post(post_id):
-    post = Post.query.get_or_404(post_id)
+    post = Post.query.get_or_404(post_id) # If post_id isnt found, it returns 404 error
     if post.author != current_user: # This is to ensure that only the author can edit their post
         abort(403) # This is the http response for a forbidden route
     form = PostForm()
@@ -128,3 +129,21 @@ def update_post(post_id):
         form.content.data = post.content
     return render_template('create_post.html', title='Update Post', form=form, legend='Update Post')
 
+
+@app.route("/post/<int:post_id>/delete", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user: # This is to ensure that only the author can edit their post
+        abort(403) # This is the http response for a forbidden route
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))
+
+@app.route("/user/<string:username>")
+def user_posts(username):
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404() # this is to get all the posts that the username clicked has uploaded on the webpage
+    posts = Post.query.filter_by(author=user).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5) # The order_by(Post.date_posted.desc()) is added to make sure that the latest post is found at the top of the blog. back slash is for breaking the line to write in the next line
+    return render_template('user_posts.html', posts=posts, user=user)
