@@ -92,7 +92,7 @@ def reset_request():
         send_reset_email(user)  # Send mail to user email
         # Show user confirmation that the message has been sent to their mail
         flash('An email has been sent with instructions to reset your password.', 'info')
-        return redirect(url_for('user.login')) # Redirects user to the login page
+        return redirect(url_for('users.login')) # Redirects user to the login page
     return render_template('reset_request.html', title='Reset Password', form=form)
 
 
@@ -112,5 +112,5 @@ def reset_token(token):
         db.session.commit()# Push user to database
         # sends a message to affirm that user account have been created
         flash('Your password has been updated! You are now able to log in', 'success')
-        return redirect(url_for('user.login')) # Takes user to login page
+        return redirect(url_for('users.login')) # Takes user to login page
     return render_template('reset_token.html', title='Reset Password', form=form)

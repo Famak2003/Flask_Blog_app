@@ -28,7 +28,7 @@ def send_reset_email(user):
                   sender='noreply@demo.com',
                   recipients=[user.email]) # This are the header of the mail
     msg.body = f'''To reset your password, visit the following link:
-{url_for('user.reset_token', token=token, _external=True)}
+{url_for('users.reset_token', token=token, _external=True)}
 
 If you did not make this request then simply ignore this email and no changes will be made.
 '''
